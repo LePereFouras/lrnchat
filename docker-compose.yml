@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lrnchat-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lrnchat
+      POSTGRES_PASSWORD: lrnchat_secure_password
+      POSTGRES_DB: lrnchat
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lrnchat-network
+
+  # Redis for sessions and caching
+  redis:
+    image: redis:7-alpine
+    container_name: lrnchat-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lrnchat-network
+
+  # Backend API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lrnchat-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://lrnchat:lrnchat_secure_password@postgres:5432/lrnchat?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: change-this-to-a-secure-random-string-in-production
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lrnchat-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lrnchat-network:
+    driver: bridge

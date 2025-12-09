@@ -1,0 +1,29 @@
+{
+    "name": "lrnchat-web",
+    "version": "1.0.0",
+    "description": "Web frontend for LRN CHAT - Encrypted messaging platform",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint src --ext js,jsx",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.20.1",
+        "socket.io-client": "^4.7.2",
+        "@tanstack/react-query": "^5.14.2",
+        "dexie": "^3.2.4",
+        "dexie-react-hooks": "^1.1.7",
+        "axios": "^1.6.2"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^4.2.1",
+        "vite": "^5.0.8",
+        "eslint": "^8.55.0",
+        "vitest": "^1.0.4"
+    }
+}
