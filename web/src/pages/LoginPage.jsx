@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 export default function LoginPage() {
     const { login, register } = useAuth();
@@ -10,11 +11,27 @@ export default function LoginPage() {
         password: ''
     });
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showResendVerification, setShowResendVerification] = useState(false);
+    const [unverifiedEmail, setUnverifiedEmail] = useState('');
+
+    const handleResendVerification = async () => {
+        try {
+            await axios.post('/api/auth/resend-verification', { email: unverifiedEmail });
+            setSuccess('Email de vérification renvoyé ! Veuillez vérifier votre boîte mail.');
+            setShowResendVerification(false);
+            setError('');
+        } catch (err) {
+            setError('Impossible de renvoyer l\'email de vérification');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
+        setShowResendVerification(false);
         setLoading(true);
 
         try {
@@ -23,7 +40,16 @@ export default function LoginPage() {
                 : await register(formData.username, formData.email, formData.password);
 
             if (!result.success) {
+                // Check for email verification error
+                if (result.error?.includes('Email non vérifié') || result.error?.includes('non vérifié')) {
+                    setShowResendVerification(true);
+                    setUnverifiedEmail(formData.email || '');
+                }
                 setError(result.error);
+            } else if (!isLogin) {
+                // Registration success
+                setSuccess('Compte créé ! Veuillez vérifier votre email pour activer votre compte.');
+        setForm Data({ username: '', email: '', password: '' });
             }
         } catch (err) {
             setError('Une erreur est survenue');
@@ -64,19 +90,18 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    {!isLogin && (
-                        <div className="input-group">
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Email (optionnel)"
-                                className="login-input"
-                                value={formData.email}
-                                onChange={handleChange}
-                                autoComplete="email"
-                            />
-                        </div>
-                    )}
+                    <div className="input-group">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            className="login-input"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required={!isLogin}
+                            autoComplete="email"
+                        />
+                    </div>
 
                     <div className="input-group">
                         <input
@@ -92,6 +117,18 @@ export default function LoginPage() {
                     </div>
 
                     {error && <div className="error-message">{error}</div>}
+                    {success && <div className="success-message" style={{ color: '#6ee7b7', marginBottom: '16px', textAlign: 'center' }}>{success}</div>}
+
+                    {showResendVerification && (
+                        <button
+                            type="button"
+                            className="login-button"
+                            onClick={handleResendVerification}
+                            style={{ marginBottom: '12px', background: '#10b981' }}
+                        >
+                            📧 Renvoyer l'email de vérification
+                        </button>
+                    )}
 
                     <button
                         type="submit"
@@ -111,6 +148,8 @@ export default function LoginPage() {
                             onClick={() => {
                                 setIsLogin(!isLogin);
                                 setError('');
+                                setSuccess('');
+                                setShowResendVerification(false);
                             }}
                         >
                             {isLogin ? 'S\'inscrire' : 'Se connecter'}
@@ -120,7 +159,7 @@ export default function LoginPage() {
 
                 <div className="security-badge">
                     <span className="security-icon">🔒</span>
-                    <span className="security-text">Chiffrement AES-256 GCM</span>
+                    <span className="security-text">Chiffrement AES-256 GCM + Vérification Email</span>
                 </div>
             </div>
         </div>

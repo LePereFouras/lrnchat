@@ -11,12 +11,15 @@ datasource db {
 
 // User model
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  email        String?  @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  lastSeen     DateTime @default(now())
+  id                  String   @id @default(uuid())
+  username            String   @unique
+  email               String?  @unique
+  passwordHash        String
+  emailVerified       Boolean  @default(false)
+  verificationToken   String?
+  tokenExpiry         DateTime?
+  createdAt           DateTime @default(now())
+  lastSeen            DateTime @default(now())
   
   // Relations
   messages              Message[]
@@ -25,6 +28,7 @@ model User {
   
   @@index([username])
   @@index([email])
+  @@index([verificationToken])
 }
 
 // Conversation model (supports both direct and group chats)

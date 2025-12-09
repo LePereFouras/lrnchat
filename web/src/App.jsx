@@ -5,6 +5,7 @@ import socketService from './services/socketService';
 import LoginPage from './pages/LoginPage';
 import ConversationsPage from './pages/ConversationsPage';
 import ChatPage from './pages/ChatPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 // Protected route wrapper
 function ProtectedRoute({ children }) {
